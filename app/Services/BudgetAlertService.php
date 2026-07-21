@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Budget;
 use App\Models\Transaction;
-use App\Models\TransactionNotification;
 
 class BudgetAlertService
 {
@@ -44,30 +43,11 @@ class BudgetAlertService
             if ($percentageUsed >= $budget->threshold_percentage && $budget->is_alert_enabled) {
                 $categoryName = $budget->category?->name ?? $budget->merchant?->name ?? 'General Category';
 
-                $title = "⚠️ Budget Alert: {$categoryName}";
-                $message = "You have used {$percentageUsed}% of your \${$budget->amount} limit for {$categoryName} (Spent: \${$spent}).";
-
-                // Prevent spamming identical unread notifications
-                $exists = TransactionNotification::where('user_id', $userId)
-                    ->where('title', $title)
-                    ->where('status', 'unread')
-                    ->exists();
-
-                if (!$exists) {
-                    TransactionNotification::create([
-                        'user_id' => $userId,
-                        'title' => $title,
-                        'message' => $message,
-                        'channel' => 'in_app',
-                        'status' => 'unread',
-                    ]);
-
-                    $alertsGenerated[] = [
-                        'budget_id' => $budget->id,
-                        'category' => $categoryName,
-                        'percentage' => round($percentageUsed, 1),
-                    ];
-                }
+                $alertsGenerated[] = [
+                    'budget_id' => $budget->id,
+                    'category' => $categoryName,
+                    'percentage' => round($percentageUsed, 1),
+                ];
             }
         }
 

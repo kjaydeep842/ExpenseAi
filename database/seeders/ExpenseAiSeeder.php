@@ -81,7 +81,7 @@ class ExpenseAiSeeder extends Seeder
         Profile::create(['user_id' => $admin->id, 'monthly_income_target' => 12000]);
         UserPreference::create(['user_id' => $admin->id, 'theme' => 'dark']);
 
-        // Demo User
+        // Demo User 1 (Alex Morgan)
         $user = User::create([
             'name' => 'Alex Morgan',
             'email' => 'alex@expenseai.test',
@@ -94,6 +94,34 @@ class ExpenseAiSeeder extends Seeder
         $user->assignRole($userRole);
         Profile::create(['user_id' => $user->id, 'employment_type' => 'employed', 'monthly_income_target' => 7500]);
         UserPreference::create(['user_id' => $user->id, 'theme' => 'dark']);
+
+        // Demo Client 2 (Sarah Jenkins)
+        $client2 = User::create([
+            'name' => 'Sarah Jenkins',
+            'email' => 'sarah@expenseai.test',
+            'phone' => '+19876543210',
+            'password' => Hash::make('password'),
+            'role' => 'user',
+            'status' => 'active',
+            'email_verified_at' => now(),
+        ]);
+        $client2->assignRole($userRole);
+        Profile::create(['user_id' => $client2->id, 'employment_type' => 'freelancer', 'monthly_income_target' => 9200]);
+        UserPreference::create(['user_id' => $client2->id, 'theme' => 'dark']);
+
+        // Demo Client 3 (Rahul Sharma)
+        $client3 = User::create([
+            'name' => 'Rahul Sharma',
+            'email' => 'rahul@expenseai.test',
+            'phone' => '+919876543210',
+            'password' => Hash::make('password'),
+            'role' => 'user',
+            'status' => 'active',
+            'email_verified_at' => now(),
+        ]);
+        $client3->assignRole($userRole);
+        Profile::create(['user_id' => $client3->id, 'employment_type' => 'business', 'monthly_income_target' => 15000]);
+        UserPreference::create(['user_id' => $client3->id, 'theme' => 'dark']);
 
         // User Accounts & Wallets
         $chaseAccount = BankAccount::create([
@@ -114,6 +142,74 @@ class ExpenseAiSeeder extends Seeder
             'balance' => 3200.00,
             'currency' => 'USD',
             'color' => '#10b981',
+        ]);
+
+        // Client 2 Accounts & Transactions
+        $sarahAccount = BankAccount::create([
+            'user_id' => $client2->id,
+            'bank_id' => $revolut->id,
+            'account_number' => '•••• 7712',
+            'account_name' => 'Revolut Freelance Account',
+            'account_type' => 'checking',
+            'balance' => 28400.00,
+            'currency' => 'USD',
+            'color' => '#a855f7',
+        ]);
+
+        Transaction::create([
+            'user_id' => $client2->id,
+            'bank_account_id' => $sarahAccount->id,
+            'category_id' => $salaryCat->id,
+            'type' => 'income',
+            'amount' => 4500.00,
+            'net_amount' => 4500.00,
+            'currency' => 'USD',
+            'status' => 'completed',
+            'transaction_date' => Carbon::now()->subDays(2),
+            'notes' => 'Client Invoice Payment - Design Project',
+            'payment_method' => 'Stripe Direct',
+        ]);
+
+        Transaction::create([
+            'user_id' => $client2->id,
+            'bank_account_id' => $sarahAccount->id,
+            'category_id' => $foodCat->id,
+            'merchant_id' => $starbucks->id,
+            'type' => 'expense',
+            'amount' => 28.50,
+            'net_amount' => 28.50,
+            'currency' => 'USD',
+            'status' => 'completed',
+            'transaction_date' => Carbon::now(),
+            'notes' => 'Team Lunch & Coffee',
+            'payment_method' => 'Credit Card',
+        ]);
+
+        // Client 3 Accounts & Transactions
+        $rahulAccount = BankAccount::create([
+            'user_id' => $client3->id,
+            'bank_id' => $hdbc->id,
+            'account_number' => '•••• 9931',
+            'account_name' => 'HDFC Corporate Account',
+            'account_type' => 'checking',
+            'balance' => 64500.00,
+            'currency' => 'USD',
+            'color' => '#10b981',
+        ]);
+
+        Transaction::create([
+            'user_id' => $client3->id,
+            'bank_account_id' => $rahulAccount->id,
+            'category_id' => $travelCat->id,
+            'merchant_id' => $uber->id,
+            'type' => 'expense',
+            'amount' => 85.00,
+            'net_amount' => 85.00,
+            'currency' => 'USD',
+            'status' => 'completed',
+            'transaction_date' => Carbon::now(),
+            'notes' => 'Client Meeting Travel',
+            'payment_method' => 'UPI',
         ]);
 
         // 9. Demo Transactions

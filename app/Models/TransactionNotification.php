@@ -7,19 +7,21 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Profile extends Model
+class TransactionNotification extends Model
 {
     use HasFactory, HasUuids;
 
     protected $fillable = [
         'user_id',
-        'bio',
-        'date_of_birth',
-        'country',
-        'currency_code',
-        'employment_type',
-        'monthly_income_target',
-        'daily_expense_limit',
+        'title',
+        'message',
+        'channel',
+        'status',
+        'read_at',
+    ];
+
+    protected $casts = [
+        'read_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

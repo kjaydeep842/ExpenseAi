@@ -46,6 +46,7 @@ return new class extends Migration
             $table->string('currency_code', 10)->default('USD');
             $table->string('employment_type')->nullable(); // employed, self-employed, freelancer, student
             $table->decimal('monthly_income_target', 15, 2)->default(0.00);
+            $table->decimal('daily_expense_limit', 15, 2)->default(500.00);
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

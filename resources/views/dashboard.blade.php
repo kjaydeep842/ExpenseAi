@@ -2,10 +2,13 @@
     <!-- Welcome Header & Quick Action Buttons -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+            <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
                 Good day, <span class="text-gradient">{{ auth()->user()->name }}</span>
+                <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-mono border border-emerald-500/30">
+                    <i class="fa-solid fa-phone text-[10px] mr-1"></i>{{ auth()->user()->phone ?? '+18005550122' }}
+                </span>
             </h1>
-            <p class="text-xs text-slate-400 mt-1">Here is your real-time financial intelligence overview for {{ date('F Y') }}.</p>
+            <p class="text-xs text-slate-400 mt-1">Real-time payment app auto-detection & daily expense budget intelligence.</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
@@ -18,6 +21,76 @@
             <a href="{{ route('transactions.index') }}" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-xs shadow-lg shadow-indigo-500/25 hover:brightness-110 flex items-center gap-2 transition">
                 <i class="fa-solid fa-plus"></i> New Transaction
             </a>
+        </div>
+    </div>
+
+    <!-- Real-Time Today's Expense & Payment Apps Detection Bar -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Today's Expense Card -->
+        <div class="glass-card rounded-3xl p-6 border border-indigo-500/40 bg-gradient-to-br from-slate-900 via-indigo-950/30 to-slate-900 space-y-3 relative overflow-hidden">
+            <div class="flex items-center justify-between text-xs font-extrabold text-indigo-300 uppercase tracking-wider">
+                <span>Today's Live Expenses</span>
+                <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono animate-pulse">● Auto-Listening</span>
+            </div>
+
+            <div class="flex items-baseline gap-3">
+                <h2 class="text-4xl font-extrabold text-white">${{ number_format($todayExpense, 2) }}</h2>
+                <span class="text-xs text-slate-400">Logged Today</span>
+            </div>
+
+            <!-- Payment Apps Breakdown Chips for Today -->
+            <div class="pt-2 border-t border-slate-800/80 flex flex-wrap items-center gap-2">
+                @forelse($paymentAppsToday as $pa)
+                    <span class="px-2.5 py-1 rounded-xl bg-slate-900/90 border border-indigo-500/30 text-[11px] text-slate-200 font-semibold flex items-center gap-1.5">
+                        <i class="fa-solid fa-mobile-screen text-indigo-400"></i>
+                        <span>{{ $pa->payment_method }}:</span>
+                        <strong class="text-emerald-400">${{ number_format($pa->total, 2) }}</strong>
+                    </span>
+                @empty
+                    <span class="text-[11px] text-slate-500">No payment app transactions detected yet today.</span>
+                @endforelse
+            </div>
+        </div>
+
+        <!-- Live Payment App Notification Simulator -->
+        <div class="lg:col-span-2 glass-card rounded-3xl p-6 border border-emerald-500/30 bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-amber-400"></i>
+                        Simulate Payment App Auto-Detection (GPay, PhonePe, Paytm, Apple Pay)
+                    </h3>
+                    <p class="text-xs text-slate-400">Test sending a payment notification to auto-add to Today's Expenses under your Mobile # {{ auth()->user()->phone ?? '' }}</p>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ route('paymentApp.simulate') }}" class="space-y-3">
+                @csrf
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input type="text" name="notification_text" id="simNotification" placeholder="e.g. Paid Rs. 500 to Starbucks via Google Pay" required class="flex-1 px-4 py-2.5 rounded-2xl bg-slate-900 border border-slate-700/80 text-white font-mono text-xs focus:outline-none focus:border-emerald-500 transition">
+                    
+                    <button type="submit" class="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 font-bold text-xs text-white shadow-lg shadow-emerald-500/20 hover:brightness-110 transition shrink-0 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-arrow-down-to-bracket"></i> Auto-Capture Expense
+                    </button>
+                </div>
+            </form>
+
+            <!-- Quick Preset Simulator Buttons -->
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+                <span class="text-[11px] font-bold text-slate-400 uppercase mr-1">Quick Presets:</span>
+                <button type="button" onclick="document.getElementById('simNotification').value = 'Paid Rs. 500 to Starbucks via Google Pay'" class="px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500 text-[11px] text-slate-300 font-mono transition">
+                    <i class="fa-brands fa-google text-indigo-400"></i> Google Pay $500
+                </button>
+                <button type="button" onclick="document.getElementById('simNotification').value = 'Paid ₹ 350 to Swiggy via PhonePe UPI'" class="px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500 text-[11px] text-slate-300 font-mono transition">
+                    <i class="fa-solid fa-mobile-screen text-purple-400"></i> PhonePe $350
+                </button>
+                <button type="button" onclick="document.getElementById('simNotification').value = 'Sent Rs 120 to Metro via Paytm Wallet'" class="px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500 text-[11px] text-slate-300 font-mono transition">
+                    <i class="fa-solid fa-wallet text-sky-400"></i> Paytm $120
+                </button>
+                <button type="button" onclick="document.getElementById('simNotification').value = 'Charged $45.00 at Uber via Apple Pay'" class="px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500 text-[11px] text-slate-300 font-mono transition">
+                    <i class="fa-brands fa-apple text-slate-300"></i> Apple Pay $45
+                </button>
+            </div>
         </div>
     </div>
 
@@ -114,73 +187,12 @@
         </div>
     </div>
 
-    <!-- Active Budgets & Goals Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Active Budgets -->
-        <div class="glass-card rounded-3xl p-6 border border-slate-800/80 space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="text-base font-extrabold text-white">Active Budget Limits</h3>
-                <a href="{{ route('budgets.index') }}" class="text-xs text-indigo-400 hover:underline">Manage Budgets →</a>
-            </div>
-
-            <div class="space-y-4">
-                @forelse($budgets as $budget)
-                    @php
-                        $percent = ($budget->amount > 0) ? min(100, round(($budget->spent / $budget->amount) * 100)) : 0;
-                        $colorClass = $percent >= 90 ? 'bg-red-500' : ($percent >= 75 ? 'bg-amber-500' : 'bg-indigo-500');
-                    @endphp
-                    <div class="space-y-1.5">
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="font-bold text-slate-200">{{ $budget->category?->name ?? 'General Budget' }}</span>
-                            <span class="text-slate-400">${{ number_format($budget->spent, 2) }} / <span class="font-semibold text-slate-200">${{ number_format($budget->amount, 2) }}</span> ({{ $percent }}%)</span>
-                        </div>
-                        <div class="w-full h-2 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
-                            <div class="h-full {{ $colorClass }} rounded-full transition-all duration-500" style="width: {{ $percent }}%"></div>
-                        </div>
-                    </div>
-                @empty
-                    <p class="text-xs text-slate-500 py-4 text-center">No active budgets configured yet.</p>
-                @endforelse
-            </div>
-        </div>
-
-        <!-- Savings Goals -->
-        <div class="glass-card rounded-3xl p-6 border border-slate-800/80 space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="text-base font-extrabold text-white">Savings & Investment Goals</h3>
-                <a href="{{ route('goals.index') }}" class="text-xs text-indigo-400 hover:underline">View All Goals →</a>
-            </div>
-
-            <div class="space-y-3">
-                @forelse($goals as $goal)
-                    @php
-                        $goalPercent = ($goal->target_amount > 0) ? min(100, round(($goal->current_amount / $goal->target_amount) * 100)) : 0;
-                    @endphp
-                    <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
-                                <i class="fa-solid fa-{{ $goal->icon ?? 'bullseye' }}"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-xs font-bold text-slate-200">{{ $goal->title }}</h4>
-                                <p class="text-[10px] text-slate-500">${{ number_format($goal->current_amount, 2) }} of ${{ number_format($goal->target_amount, 2) }}</p>
-                            </div>
-                        </div>
-                        <span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-extrabold">{{ $goalPercent }}%</span>
-                    </div>
-                @empty
-                    <p class="text-xs text-slate-500 py-4 text-center">No active goals yet.</p>
-                @endforelse
-            </div>
-        </div>
-    </div>
-
     <!-- Recent Transactions Modern Table -->
     <div class="glass-card rounded-3xl p-6 border border-slate-800/80 space-y-4">
         <div class="flex items-center justify-between">
             <div>
                 <h3 class="text-base font-extrabold text-white">Recent Transactions</h3>
-                <p class="text-xs text-slate-400">Latest activity across bank accounts and wallets</p>
+                <p class="text-xs text-slate-400">Latest activity across bank accounts and payment apps</p>
             </div>
             <a href="{{ route('transactions.index') }}" class="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-300 hover:text-white transition">View All Activity</a>
         </div>
@@ -192,7 +204,7 @@
                         <th class="py-3 px-4">Transaction / Merchant</th>
                         <th class="py-3 px-4">Category</th>
                         <th class="py-3 px-4">Date</th>
-                        <th class="py-3 px-4">Payment Method</th>
+                        <th class="py-3 px-4">Payment App</th>
                         <th class="py-3 px-4 text-right">Amount</th>
                     </tr>
                 </thead>
@@ -214,10 +226,12 @@
                                 </span>
                             </td>
                             <td class="py-3.5 px-4 text-slate-400">
-                                {{ $txn->transaction_date->format('M d, Y') }}
+                                {{ $txn->transaction_date->format('M d, Y H:i') }}
                             </td>
-                            <td class="py-3.5 px-4 text-slate-400">
-                                {{ $txn->payment_method ?? 'Direct Bank' }}
+                            <td class="py-3.5 px-4 text-slate-300 font-mono">
+                                <span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-indigo-400 font-bold text-[11px]">
+                                    {{ $txn->payment_method ?? 'Payment App' }}
+                                </span>
                             </td>
                             <td class="py-3.5 px-4 text-right font-extrabold text-sm {{ $txn->type === 'income' ? 'text-emerald-400' : 'text-slate-100' }}">
                                 {{ $txn->type === 'income' ? '+' : '-' }}${{ number_format($txn->amount, 2) }}

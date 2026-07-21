@@ -19,13 +19,26 @@ class DashboardController extends Controller
     {
         $userId = Auth::id();
 
-        // 1. Calculate Balances & Monthly Stats
+        // 1. Calculate Today's Expense & Payment App Breakdown
+        $todayExpense = (float) Transaction::where('user_id', $userId)
+            ->where('type', 'expense')
+            ->whereDate('transaction_date', Carbon::today())
+            ->sum('amount');
+
+        $paymentAppsToday = Transaction::where('user_id', $userId)
+            ->where('type', 'expense')
+            ->whereDate('transaction_date', Carbon::today())
+            ->selectRaw('payment_method, SUM(amount) as total, COUNT(*) as count')
+            ->groupBy('payment_method')
+            ->get();
+
+        // 2. Balances & Monthly Stats
         $bankBalance = BankAccount::where('user_id', $userId)->where('is_active', true)->sum('balance');
         $walletBalance = Wallet::where('user_id', $userId)->sum('balance');
         $totalBalance = $bankBalance + $walletBalance;
 
         $incomeThisMonth = (float) Transaction::where('user_id', $userId)
-            ->where('type', 'income')
+            ->whereIn('type', ['income', 'salary'])
             ->whereMonth('transaction_date', now()->month)
             ->whereYear('transaction_date', now()->year)
             ->sum('amount');
@@ -39,14 +52,14 @@ class DashboardController extends Controller
         $netSaved = $incomeThisMonth - $expenseThisMonth;
         $savingsRate = ($incomeThisMonth > 0) ? round(($netSaved / $incomeThisMonth) * 100, 1) : 0;
 
-        // 2. Fetch Recent Transactions
+        // 3. Fetch Recent Transactions
         $recentTransactions = Transaction::where('user_id', $userId)
             ->with(['category', 'merchant', 'bankAccount'])
             ->latest('transaction_date')
-            ->take(8)
+            ->take(10)
             ->get();
 
-        // 3. Category Spending Breakdown for ApexCharts
+        // 4. Category Spending Breakdown for ApexCharts
         $categoryBreakdown = Transaction::where('user_id', $userId)
             ->where('type', 'expense')
             ->whereMonth('transaction_date', now()->month)
@@ -55,16 +68,18 @@ class DashboardController extends Controller
             ->with('category')
             ->get();
 
-        // 4. Budgets & Goals
+        // 5. Budgets & Goals
         (new BudgetAlertService())->checkUserBudgets($userId);
         $budgets = Budget::where('user_id', $userId)->with('category')->take(4)->get();
         $goals = Goal::where('user_id', $userId)->where('status', 'active')->take(3)->get();
 
-        // 5. AI Intelligence Tip
+        // 6. AI Intelligence Tip
         $aiService = new GeminiAiService();
         $aiInsight = $aiService->askFinancialAssistant($userId, "Give me a quick 2-sentence summary of my budget health this month.");
 
         return view('dashboard', [
+            'todayExpense' => $todayExpense,
+            'paymentAppsToday' => $paymentAppsToday,
             'totalBalance' => $totalBalance,
             'incomeThisMonth' => $incomeThisMonth,
             'expenseThisMonth' => $expenseThisMonth,

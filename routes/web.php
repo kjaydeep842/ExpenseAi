@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AiAssistantController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\ImportController;
@@ -31,6 +32,35 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Authenticated Application Vault Routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Client Mobile Lookup & Daily Budget Management
+    Route::get('/clients', [ClientController::class, 'index'])->name('clients.index');
+    Route::post('/clients/store', [ClientController::class, 'createClient'])->name('clients.store');
+    Route::post('/clients/{clientId}/expense', [ClientController::class, 'storeExpense'])->name('clients.expense');
+    Route::post('/clients/{clientId}/budget', [ClientController::class, 'storeBudget'])->name('clients.budget');
+
+    // Daily Expense & Payment Apps Hub
+    Route::get('/daily-hub', [\App\Http\Controllers\DailyHubController::class, 'index'])->name('daily.index');
+    Route::post('/daily-hub/limit', [\App\Http\Controllers\DailyHubController::class, 'updateLimit'])->name('daily.limit');
+    Route::post('/daily-hub/scan-today-sms', [\App\Http\Controllers\DailyHubController::class, 'scanTodaySms'])->name('daily.scanSms');
+    Route::get('/daily-hub/pdf', [\App\Http\Controllers\DailyHubController::class, 'exportTodayPdf'])->name('daily.pdf');
+    Route::get('/daily-hub/csv', [\App\Http\Controllers\DailyHubController::class, 'exportTodayCsv'])->name('daily.csv');
+
+    // Google Pay Direct OAuth Connect & Link
+    Route::get('/gpay/connect', [\App\Http\Controllers\GooglePayConnectController::class, 'index'])->name('gpay.connect');
+    Route::post('/gpay/authorize', [\App\Http\Controllers\GooglePayConnectController::class, 'authorizeGPay'])->name('gpay.authorize');
+    Route::post('/gpay/disconnect', [\App\Http\Controllers\GooglePayConnectController::class, 'disconnectGPay'])->name('gpay.disconnect');
+
+    // Native Direct Bank Sync (Zero 3rd Party Apps Required)
+    Route::get('/native-sync', [\App\Http\Controllers\NativeBankSyncController::class, 'index'])->name('nativeSync.index');
+    Route::post('/native-sync/fetch', [\App\Http\Controllers\NativeBankSyncController::class, 'fetchLiveTransactions'])->name('nativeSync.fetch');
+
+    // Mobile Listener Bridge (MacroDroid / Tasker Setup)
+    Route::get('/mobile-sync', [\App\Http\Controllers\MobileSyncBridgeController::class, 'index'])->name('mobileSync.index');
+    Route::get('/mobile-sync/download-config', [\App\Http\Controllers\MobileSyncBridgeController::class, 'downloadMacroConfig'])->name('mobileSync.download');
+
+    // Payment App Notification Parser (Google Pay, PhonePe, Paytm, Apple Pay)
+    Route::post('/payment-app/simulate', [\App\Http\Controllers\PaymentAppWebhookController::class, 'simulate'])->name('paymentApp.simulate');
 
     // Transactions
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
